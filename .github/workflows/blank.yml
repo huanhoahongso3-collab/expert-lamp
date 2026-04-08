@@ -1,29 +1,29 @@
-name: Decompile Android Bundle
+name: Decompile Hermes Bundle
 on:
   workflow_dispatch:
 
 jobs:
-  decompile:
+  decompile-hermes:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          node-version: '20'
+          python-version: '3.10'
 
-      - name: Install JS Beautifier
-        run: npm install -g js-beautify
+      - name: Install hbctool
+        run: pip install hbctool
 
-      - name: Format Bundle
+      - name: Disassemble Hermes Bytecode
         run: |
-          # This will take the minified code and add indentation/newlines
-          js-beautify ./index.android.bundle -o ./readable_index.js
-
-      - name: Upload Readable Code
+          # hbctool disassembles the binary bundle into a readable instruction folder
+          hbctool disassemble ./index.android.bundle ./decompiled_output
+        
+      - name: Upload Instructions
         uses: actions/upload-artifact@v4
         with:
-          name: formatted-js
-          path: readable_index.js
+          name: hermes-instructions
+          path: decompiled_output/
