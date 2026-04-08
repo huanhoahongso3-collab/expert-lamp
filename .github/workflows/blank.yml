@@ -19,8 +19,8 @@ jobs:
 
       - name: Disassemble Hermes Bytecode
         run: |
-          # hbctool disassembles the binary bundle into a readable instruction folder
-          hbctool disassemble ./index.android.bundle ./decompiled_output
+          # Changed 'disassemble' to 'disasm' to match the tool's usage
+          hbctool disasm ./index.android.bundle ./decompiled_output
         
       - name: Upload Instructions
         uses: actions/upload-artifact@v4
