@@ -1,0 +1,30 @@
+name: Decompile Android Bundle
+on:
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  decompile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Create Output Directory
+        run: mkdir -p decompiled_source
+
+      - name: Decompile Bundle
+        run: |
+          # Use npx to run the decompiler without global installation
+          # -i is the input file, -o is the output directory
+          npx react-native-decompiler -i ./index.android.bundle -o ./decompiled_source
+
+      - name: Upload Decompiled Source
+        uses: actions/upload-artifact@v4
+        with:
+          name: react-js-source
+          path: decompiled_source/
