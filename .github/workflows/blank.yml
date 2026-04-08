@@ -1,9 +1,9 @@
-name: Decompile Hermes Bundle
+name: Decompile Hermes v96
 on:
   workflow_dispatch:
 
 jobs:
-  decompile-hermes:
+  decompile-v96:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -14,16 +14,24 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install hbctool
-        run: pip install hbctool
+      - name: Install hermes-python
+        run: pip install hermes-python
 
-      - name: Disassemble Hermes Bytecode
+      - name: Extract Strings and Bytecode
         run: |
-          # Changed 'disassemble' to 'disasm' to match the tool's usage
-          hbctool disasm ./index.android.bundle ./decompiled_output
+          # This script uses the library to dump the readable strings
+          # which usually contains the API keys and logic metadata.
+          python3 -c "
+          import hermes;
+          with open('./index.android.bundle', 'rb') as f:
+              hbc = hermes.HBC(f.read());
+              print(f'HBC Version: {hbc.version}');
+              for i, s in enumerate(hbc.strings):
+                  print(f'String {i}: {s}')
+          " > strings_output.txt
         
-      - name: Upload Instructions
+      - name: Upload Strings
         uses: actions/upload-artifact@v4
         with:
-          name: hermes-instructions
-          path: decompiled_output/
+          name: locket-strings
+          path: strings_output.txt
