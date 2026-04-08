@@ -3,35 +3,33 @@ on:
   workflow_dispatch:
 
 jobs:
-  decompile-v96:
+  decompile:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-
-      - name: Install hermes-python
-        run: pip install hermes-python
-
-      - name: Extract Strings and Bytecode
+      - name: Download Hermes Tools
         run: |
-          # This script uses the library to dump the readable strings
-          # which usually contains the API keys and logic metadata.
-          python3 -c "
-          import hermes;
-          with open('./index.android.bundle', 'rb') as f:
-              hbc = hermes.HBC(f.read());
-              print(f'HBC Version: {hbc.version}');
-              for i, s in enumerate(hbc.strings):
-                  print(f'String {i}: {s}')
-          " > strings_output.txt
-        
-      - name: Upload Strings
+          # Download the official Hermes CLI tools for Linux
+          wget https://github.com/facebook/hermes/releases/download/v0.13.0/hermes-cli-linux-v0.13.0.tar.gz
+          tar -xvf hermes-cli-linux-v0.13.0.tar.gz
+
+      - name: Disassemble Bundle
+        run: |
+          # Use the official disassembler
+          # This creates a human-readable assembly file (.hasm)
+          ./hermes-dis ./index.android.bundle -out locket_disassembled.hasm
+
+      - name: Extract Strings (The most useful part)
+        run: |
+          # Strings often contain the API endpoints and logic names
+          grep -oP '(?<=")[^"]+(?=")' locket_disassembled.hasm > locket_strings.txt || true
+
+      - name: Upload Results
         uses: actions/upload-artifact@v4
         with:
-          name: locket-strings
-          path: strings_output.txt
+          name: locket-source-analysis
+          path: |
+            locket_disassembled.hasm
+            locket_strings.txt
