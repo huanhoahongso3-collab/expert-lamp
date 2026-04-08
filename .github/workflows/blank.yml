@@ -1,6 +1,6 @@
 name: Decompile Android Bundle
 on:
-  workflow_dispatch: # Allows manual trigger from the Actions tab
+  workflow_dispatch:
 
 jobs:
   decompile:
@@ -14,17 +14,16 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Create Output Directory
-        run: mkdir -p decompiled_source
+      - name: Install JS Beautifier
+        run: npm install -g js-beautify
 
-      - name: Decompile Bundle
+      - name: Format Bundle
         run: |
-          # Use npx to run the decompiler without global installation
-          # -i is the input file, -o is the output directory
-          npx react-native-decompiler -i ./index.android.bundle -o ./decompiled_source
+          # This will take the minified code and add indentation/newlines
+          js-beautify ./index.android.bundle -o ./readable_index.js
 
-      - name: Upload Decompiled Source
+      - name: Upload Readable Code
         uses: actions/upload-artifact@v4
         with:
-          name: react-js-source
-          path: decompiled_source/
+          name: formatted-js
+          path: readable_index.js
